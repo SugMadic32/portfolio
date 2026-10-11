@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-paper: #F6F4EF;
+  --c-paper-alt: #ECE9E1;
+  --c-ink: #15161A;
+  --c-mute: #6B6F76;
+  --c-line: #DDD9CE;
+  --c-accent: #2954C8;
+  --c-accent-soft: #6B8AE0;
+  --page-scale: 1;
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+}
+
+[data-theme='dark'] {
+  --c-paper: #1B1E25;
+  --c-paper-alt: #242831;
+  --c-ink: #EDEBE6;
+  --c-mute: #9A9DA6;
+  --c-line: #353A45;
+  --c-accent: #7FA2F0;
+  --c-accent-soft: #4A6DC4;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: #07070a;
+  color: var(--c-ink);
+  font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.cursor-active, body.cursor-active a, body.cursor-active button { cursor: none; }
+}
+::selection { background: var(--c-accent); color: #fff; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--c-accent-soft); outline-offset: 3px; }
+
+/* ================= Scene ================= */
+.scene {
+  position: fixed; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 46%, rgba(255, 226, 170, 0.11), transparent 70%),
+    radial-gradient(ellipse 130% 110% at 50% 50%, #16120f 0%, #0b0a09 55%, #040404 100%);
+}
+.scene::before { /* wood grain */
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.30) 0 2px, transparent 2px 31px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 140px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+}
+.scene::after { /* vignette */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 48%, transparent 38%, rgba(0,0,0,.78) 100%);
+}
+.scene-light {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at var(--lx, 50%) var(--ly, 40%), rgba(255, 240, 210, .13), transparent 42%);
+  transition: background .2s linear;
+}
+.scene-dust { position: absolute; inset: 0; pointer-events: none; }
+
+.book-in { animation: bookIn 1s cubic-bezier(.22,1,.36,1) both; }
+.book-shift { transition: transform .8s cubic-bezier(.22,1,.36,1), opacity .22s ease; }
+.book-shadow {
+  position: absolute; left: 50%; bottom: -6%; width: 96%; height: 34px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.75), transparent 70%); filter: blur(10px);
+  pointer-events: none;
+}
+.spine {
+  position: absolute; top: 0; bottom: 0; left: 50%; width: 46px; transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,.20) 42%, rgba(0,0,0,.30) 50%, rgba(0,0,0,.20) 58%, transparent);
+  pointer-events: none; z-index: 5; transition: opacity .5s;
+}
+
+/* Click a page edge to turn (mouse devices only; touch uses swipe) */
+.turn-zone { position: absolute; z-index: 20; top: 26%; height: 48%; width: 6.5%; min-width: 26px; background: transparent; border: 0; padding: 0; transition: background .2s; }
+.turn-left { left: 0; }
+.turn-right { right: 0; }
+.turn-left:hover { background: linear-gradient(to right, rgba(255,255,255,.14), transparent); }
+.turn-right:hover { background: linear-gradient(to left, rgba(255,255,255,.14), transparent); }
+@media (hover: none) { .turn-zone { display: none; } }
+
+/* HUD */
+.hud-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 40px; min-width: 40px; border-radius: 999px; padding: 0 14px;
+  color: rgba(255,255,255,.82); font-size: 13px; font-weight: 500; white-space: nowrap;
+  border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: background .2s, color .2s, border-color .2s;
+}
+.hud-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+.hud-btn.primary { background: #F6F4EF; color: #15161A; border-color: transparent; font-weight: 600; }
+.hud-btn.primary:hover { background: #fff; }
+.chip {
+  flex: none; height: 34px; padding: 0 14px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+  color: rgba(255,255,255,.6); border: 1px solid transparent; transition: all .2s;
+}
+.chip:hover { color: #fff; }
+.chip.active { color: #15161A; background: #F6F4EF; }
+
+/* ================= Pages ================= */
+.pg { width: 100%; height: 100%; overflow: hidden; position: relative; background: var(--c-paper); color: var(--c-ink); }
+.pg-inner { position: absolute; left: 0; top: 0; width: 440px; height: 640px; transform-origin: 0 0; transform: scale(var(--page-scale)); }
+.pg::after { /* paper grain */
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.10'/%3E%3C/svg%3E");
+  opacity: .55;
+}
+.pg-left::before, .pg-right::before { content: ''; position: absolute; top: 0; bottom: 0; width: 11%; pointer-events: none; z-index: 4; }
+.pg-left::before { right: 0; background: linear-gradient(to left, rgba(0,0,0,.22), transparent); }
+.pg-right::before { left: 0; background: linear-gradient(to right, rgba(0,0,0,.22), transparent); }
+
+.pg a *, .pg button * { pointer-events: none; } /* keep clicks on the <a>/<button> itself so the book doesn't treat them as page drags */
+
+.pg-art { color: #F3F1EC; background: #0c0d12; }
+.pg-art .pg-inner {
+  background:
+    radial-gradient(120% 75% at 12% 0%, color-mix(in srgb, var(--c, #2954C8) 48%, transparent), transparent 62%),
+    radial-gradient(100% 70% at 95% 100%, color-mix(in srgb, var(--c, #2954C8) 30%, transparent), transparent 62%),
+    #0c0d12;
+}
+.pg-cover { color: #F3F1EC; background: #0b1226; }
+.pg-cover .pg-inner {
+  background:
+    radial-gradient(90% 60% at 30% 10%, rgba(107,147,232,.28), transparent 60%),
+    linear-gradient(160deg, #14213f 0%, #0b1226 55%, #080c18 100%);
+}
+
+.eyebrow { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--c-mute); font-weight: 600; }
+.h-display { font-family: 'Space Grotesk', sans-serif; font-weight: 600; letter-spacing: -.02em; line-height: 1.02; }
+.serif { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: 0; }
+.outline-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; -webkit-text-stroke: 1.4px var(--c); color: transparent; letter-spacing: -.04em; line-height: .9; }
+
+/* ================= Art + motion ================= */
+.art { width: 100%; height: auto; overflow: visible; display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinRev { to { transform: rotate(-360deg); } }
+@keyframes ringPulse { 0% { transform: scale(.5); opacity: .9; } 100% { transform: scale(1.3); opacity: 0; } }
+@keyframes ecgDraw { to { stroke-dashoffset: 0; } }
+@keyframes scanY { 0% { transform: translateY(0); } 100% { transform: translateY(290px); } }
+@keyframes detect { 0%, 8% { opacity: 0; } 22%, 62% { opacity: 1; } 76%, 100% { opacity: 0; } }
+@keyframes lesson { 0%, 100% { opacity: .16; } 40%, 60% { opacity: 1; } }
+@keyframes dashflow { to { stroke-dashoffset: -24; } }
+@keyframes binGlow { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(7px); } }
+@keyframes bookIn { from { opacity: 0; transform: translateY(28px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes glowPulse { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: .95; transform: scale(1.06); } }
+
+.glow, .floaty, .nudge { transform-box: fill-box; transform-origin: center; }
+.ring { transform-box: fill-box; transform-origin: center; animation: ringPulse 4.2s ease-out infinite; }
+.spin { animation: spin 24s linear infinite; }
+.ecg { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ecgDraw 3s linear infinite; }
+.scan { animation: scanY 3.4s linear infinite; }
+.det { animation: detect 6s ease-in-out infinite; }
+.lesson { animation: lesson 6s ease-in-out infinite; }
+.edge { stroke-dasharray: 6 6; animation: dashflow 1.6s linear infinite; }
+.bin { animation: binGlow 4.5s ease-in-out infinite; }
+.floaty { animation: floaty 5s ease-in-out infinite; }
+.nudge { animation: nudge 1.6s ease-in-out infinite; }
+.glow { animation: glowPulse 5s ease-in-out infinite; }
+
+@keyframes helixTurn { from { transform: scaleX(1); } to { transform: scaleX(-1); } }
+@keyframes ecoFall { 0% { transform: translate(304px, 30px); opacity: 0; } 12% { opacity: 1; } 78% { opacity: 1; } 100% { transform: translate(222px, 196px); opacity: 0; } }
+@keyframes wireCursor { 0%, 100% { transform: translate(110px, 60px); } 25% { transform: translate(190px, 130px); } 50% { transform: translate(270px, 130px); } 75% { transform: translate(110px, 200px); } }
+.rung { animation: helixTurn 3.5s ease-in-out infinite alternate; }
+.eco-item { animation: ecoFall 4.5s cubic-bezier(.4, 0, .8, 1) infinite; }
+.wire-cursor { animation: wireCursor 7s ease-in-out infinite; }
+
+.orbit { animation: spin 46s linear infinite; }
+.orbit-counter { animation: spinRev 46s linear infinite; }
+.orbit-item { transition: transform .3s; }
+.orbit-item:hover { transform: scale(1.18); }
+
+/* Lite mode: decorative motion off (manual switch, or automatic on slow devices) */
+html.lite .art *, html.lite .orbit, html.lite .orbit-counter, html.lite .glow, html.lite .floaty,
+html.lite .nudge, html.lite .ring, html.lite .spin { animation: none !important; }
+html.lite .ecg { stroke-dashoffset: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .001ms !important; }
+  .ecg { stroke-dashoffset: 0; }
+}
